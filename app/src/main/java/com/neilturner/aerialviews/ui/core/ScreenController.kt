@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import com.neilturner.aerialviews.R
 import com.neilturner.aerialviews.data.PlaylistCacheRepository
+import com.neilturner.aerialviews.data.preferences.PresetHelper
 import com.neilturner.aerialviews.databinding.AerialActivityBinding
 import com.neilturner.aerialviews.databinding.ImageViewBinding
 import com.neilturner.aerialviews.databinding.OverlayViewBinding
@@ -103,6 +104,8 @@ class ScreenController(
     private val metadataJobs = mutableMapOf<OverlayType, Job>()
     private var currentMedia: AerialMedia? = null
     private val cacheRepository = PlaylistCacheRepository(context)
+    private val presetPlaylists = mutableMapOf<String, MediaPlaylist>()
+    private var presetSwitchJob: Job? = null
 
     private val videoViewBinding: VideoViewBinding
     private val imageViewBinding: ImageViewBinding
@@ -270,6 +273,8 @@ class ScreenController(
             playlist = mediaResult.mediaPlaylist
             if (playlist.size > 0) {
                 Timber.i("Playlist size: ${playlist.size}")
+                // Remember the playlist for the active preset (or un-preset config) for quick switching
+                presetPlaylists[GeneralPrefs.activePreset] = playlist
                 loadNextItem()
                 scheduleSleepTimer()
             } else {
@@ -674,6 +679,7 @@ class ScreenController(
         musicPlayer?.pause()
         musicPlayer?.release()
         sleepTimerJob?.cancel()
+        presetSwitchJob?.cancel()
         metadataJobs.values.forEach { it.cancel() }
         metadataJobs.clear()
         mainScope.cancel()
@@ -682,6 +688,59 @@ class ScreenController(
     fun skipItem(previous: Boolean = false) {
         previousItem = previous
         fadeOutCurrentItem()
+    }
+
+    fun switchPreset(previous: Boolean = false) {
+        if (blackOutMode) return
+        if (!this::playlist.isInitialized) return
+
+        val presets = PresetHelper.getPresets(context)
+        if (presets.isEmpty()) {
+            mainScope.launch {
+                ToastHelper.show(context, resources.getString(R.string.presets_none))
+            }
+            return
+        }
+
+        val currentIndex = presets.indexOfFirst { it.id == GeneralPrefs.activePreset }
+        val nextIndex =
+            if (currentIndex == -1) {
+                if (previous) presets.lastIndex else 0
+            } else {
+                (currentIndex + (if (previous) -1 else 1) + presets.size) % presets.size
+            }
+
+        val preset = presets[nextIndex]
+        if (nextIndex == currentIndex) {
+            mainScope.launch {
+                ToastHelper.show(context, resources.getString(R.string.presets_switched, preset.name), Toast.LENGTH_SHORT)
+            }
+            return
+        }
+
+        presetSwitchJob?.cancel()
+        presetSwitchJob =
+            mainScope.launch {
+                // Apply the preset settings so providers and streaming data sources use them
+                PresetHelper.applyPreset(context, preset.id)
+                GeneralPrefs.activePreset = preset.id
+
+                var newPlaylist = presetPlaylists[preset.id]
+                if (newPlaylist == null) {
+                    ToastHelper.show(context, resources.getString(R.string.presets_loading, preset.name), Toast.LENGTH_SHORT)
+                    newPlaylist = MediaService(context).fetchMedia(useCache = false).mediaPlaylist
+                    if (newPlaylist.size == 0) {
+                        ToastHelper.show(context, resources.getString(R.string.presets_empty, preset.name))
+                        return@launch
+                    }
+                    presetPlaylists[preset.id] = newPlaylist
+                }
+
+                Timber.i("Switching to preset '${preset.name}' (${newPlaylist.size} items)")
+                playlist = newPlaylist
+                ToastHelper.show(context, resources.getString(R.string.presets_switched, preset.name), Toast.LENGTH_SHORT)
+                skipItem()
+            }
     }
 
     fun toggleBlackOutMode() {

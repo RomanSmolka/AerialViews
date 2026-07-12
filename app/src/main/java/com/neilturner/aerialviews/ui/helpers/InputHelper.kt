@@ -117,6 +117,8 @@ object InputHelper {
             ButtonType.TOGGLE_MUTE -> controller?.toggleMute()
             ButtonType.TOGGLE_PAUSE -> controller?.togglePause()
             ButtonType.TOGGLE_LOOPING -> controller?.toggleLooping()
+            ButtonType.PRESET_NEXT -> controller?.switchPreset()
+            ButtonType.PRESET_PREVIOUS -> controller?.switchPreset(true)
             ButtonType.EXIT_TO_SETTINGS -> exit(false)
             else -> exit(true)
         }
@@ -311,6 +313,8 @@ object InputHelper {
                 ButtonType.TOGGLE_MUTE -> controller?.toggleMute()
                 ButtonType.TOGGLE_PAUSE -> controller?.togglePause()
                 ButtonType.TOGGLE_LOOPING -> controller?.toggleLooping()
+                ButtonType.PRESET_NEXT -> controller?.switchPreset()
+                ButtonType.PRESET_PREVIOUS -> controller?.switchPreset(true)
                 ButtonType.EXIT_TO_SETTINGS -> exit(false)
                 else -> exit(true)
             }

@@ -29,6 +29,7 @@
     <string name="dialog_error_search_message">Failed to search for location: %1$s</string>
 
     <!-- All Categories -->
+    <string name="category_presets">Presets</string>
     <string name="category_playlist_cache">Cache</string>
     <string name="category_actions">Actions</string>
     <string name="category_advanced">Advanced</string>
@@ -142,6 +143,20 @@
     <string name="settings_system_options_removed">This feature was removed by the manufacturer\nPlease visit the Aerial Views website for more details</string>
 
     <!-- Main / Video Sources -->
+    <string name="presets_default_name">Default</string>
+    <string name="presets_add">Add preset…</string>
+    <string name="presets_add_summary">Creates a new media sources preset</string>
+    <string name="presets_name_hint">Preset name</string>
+    <string name="presets_tap_to_edit">Edit sources for preset</string>
+    <string name="presets_current">Preset options</string>
+    <string name="presets_option_rename">Rename</string>
+    <string name="presets_option_delete">Delete</string>
+    <string name="presets_delete_confirm">Delete preset \'%1$s\'?</string>
+    <string name="presets_none">No presets configured</string>
+    <string name="presets_loading">Loading preset: %1$s…</string>
+    <string name="presets_switched">Preset: %1$s</string>
+    <string name="presets_empty">Preset \'%1$s\' has no media</string>
+
     <string name="sources_apple_title">Videos by Apple</string>
     <string name="sources_apple_summary">Stream Apple videos using your internet connection</string>
 

@@ -21,6 +21,9 @@ import com.neilturner.aerialviews.services.weather.WindSpeedUnit
 object GeneralPrefs : KotprefModel() {
     override val kotprefName = "${context.packageName}_preferences"
 
+    // Presets
+    var activePreset by stringPref("", "active_preset")
+
     // Overlays - Top
     var slotTopLeft1 by nullableEnumValuePref(OverlayType.EMPTY, "slot_top_left1")
     var slotTopLeft2 by nullableEnumValuePref(OverlayType.EMPTY, "slot_top_left2")

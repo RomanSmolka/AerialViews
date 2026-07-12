@@ -8,7 +8,7 @@
         <Preference
             app:title="@string/settings_media_sources_title"
             app:summary="@string/settings_media_sources_summary"
-            app:fragment="com.neilturner.aerialviews.ui.sources.SourcesFragment"/>
+            app:fragment="com.neilturner.aerialviews.ui.sources.PresetsFragment"/>
 
         <Preference
             app:title="@string/settings_settings_title"

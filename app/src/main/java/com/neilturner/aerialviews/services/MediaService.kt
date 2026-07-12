@@ -162,18 +162,22 @@ class MediaService(
         providers.sortBy { it.type == ProviderSourceType.REMOTE }
     }
 
-    suspend fun fetchMedia(onStatus: (status: LoadingStatus) -> Unit = {}): MediaFetchResult =
+    suspend fun fetchMedia(
+        useCache: Boolean = true,
+        onStatus: (status: LoadingStatus) -> Unit = {},
+    ): MediaFetchResult =
         withContext(Dispatchers.IO) {
             val settingsHash = config.buildHash()
+            val cacheEnabled = config.playlistCache && useCache
             val cacheRepo =
-                if (config.playlistCache) {
+                if (cacheEnabled) {
                     com.neilturner.aerialviews.data
                         .PlaylistCacheRepository(context)
                 } else {
                     null
                 }
 
-            if (config.playlistCache) {
+            if (cacheEnabled) {
                 if (cacheRepo != null && cacheRepo.isCacheValid(settingsHash)) {
                     val cached = cacheRepo.getCachedPlaylist()
                     if (cached != null) {
@@ -301,7 +305,7 @@ class MediaService(
 
             Timber.i("Total media items: ${filteredMedia.size}")
 
-            if (config.playlistCache && cacheRepo != null) {
+            if (cacheEnabled && cacheRepo != null) {
                 // Cache enabled: save to DB, return windowed playlist that streams from DB
                 cacheRepo.cachePlaylist(
                     media = filteredMedia,
